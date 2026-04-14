@@ -3,32 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NBS STUDIOS | LIVE DATA</title>
+    <title>NBS STUDIOS | LIVE</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background-color: #000; color: white; font-family: 'Inter', sans-serif; }
+        body { background-color: #000; color: white; font-family: 'Inter', sans-serif; scroll-behavior: smooth; }
         .nbs-blue { color: #3b82f6; }
-        .stat-card { border-left: 1px solid #1a1a1a; padding-left: 2rem; min-height: 100px; }
+        .stat-card { border-left: 1px solid #1a1a1a; padding-left: 2rem; }
         .game-card { background: #0a0a0a; border: 1px solid #1a1a1a; border-radius: 24px; overflow: hidden; transition: 0.4s; }
         .game-card:hover { border-color: #3b82f6; transform: translateY(-5px); }
+        .nav-link { font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; transition: 0.3s; }
+        .nav-link:hover { color: #3b82f6; }
     </style>
 </head>
 <body>
 
-    <nav class="flex justify-between items-center p-8 max-w-7xl mx-auto">
+    <nav class="max-w-7xl mx-auto px-8 py-10 flex justify-between items-center">
         <img src="https://i.postimg.cc/VLmRXK43/Group-29.png" alt="NBS Logo" class="h-10">
-        <div class="hidden md:flex gap-8 font-bold uppercase tracking-tighter text-sm">
-            <a href="#" class="hover:text-blue-500">Analytics</a>
-            <a href="https://www.roblox.com/groups/9826231921" class="bg-blue-600 px-6 py-2 rounded-full">Group Page</a>
+        <div class="flex items-center gap-10">
+            <a href="#games" class="nav-link">Games</a>
+            <a href="#about" class="nav-link">About Us</a>
+            <a href="https://www.roblox.com/groups/9826231921" target="_blank" class="bg-blue-600 px-6 py-2 rounded-full font-bold uppercase text-[0.7rem] hover:bg-blue-700 transition">Group Page</a>
         </div>
     </nav>
 
-    <header class="text-center py-20 px-4">
+    <header class="text-center py-20">
         <h1 class="text-7xl md:text-9xl font-black tracking-tighter mb-4">NEXT BIG <span class="nbs-blue">STEP.</span></h1>
-        <p class="text-zinc-500 text-xl font-medium italic">2026 Real-Time Platform Dashboard</p>
+        <p class="text-zinc-500 text-xl font-medium italic">2026 Studio Intelligence Dashboard</p>
     </header>
 
-    <section class="max-w-7xl mx-auto px-6 py-16 grid grid-cols-1 md:grid-cols-4 gap-10 border-y border-zinc-900">
+    <section class="max-w-7xl mx-auto px-8 py-16 grid grid-cols-1 md:grid-cols-4 gap-10 border-y border-zinc-900">
         <div class="stat-card">
             <p class="text-zinc-500 text-[10px] uppercase font-bold tracking-widest">Total Playing</p>
             <h2 id="total-playing" class="text-5xl font-black mt-2">--</h2>
@@ -38,89 +41,114 @@
             <h2 id="total-visits" class="text-5xl font-black mt-2">--</h2>
         </div>
         <div class="stat-card">
-            <p class="text-zinc-500 text-[10px] uppercase font-bold tracking-widest">% of Platform CCU</p>
-            <h2 id="platform-ccu" class="text-4xl font-black nbs-blue mt-2">0.00%</h2>
+            <p class="text-zinc-500 text-[10px] uppercase font-bold tracking-widest">% of Roblox CCU</p>
+            <h2 id="platform-ccu" class="text-4xl font-black nbs-blue mt-2">--</h2>
         </div>
         <div class="stat-card">
-            <p class="text-zinc-500 text-[10px] uppercase font-bold tracking-widest">% of Platform DAU</p>
-            <h2 id="platform-dau" class="text-4xl font-black nbs-blue mt-2">0.00%</h2>
+            <p class="text-zinc-500 text-[10px] uppercase font-bold tracking-widest">% of Roblox DAU</p>
+            <h2 id="platform-dau" class="text-4xl font-black nbs-blue mt-2">--</h2>
         </div>
     </section>
 
-    <section class="max-w-7xl mx-auto px-6 py-24">
-        <h3 class="text-sm font-black mb-12 uppercase tracking-[0.3em] text-zinc-700">Studio Portfolio</h3>
-        <div id="games-grid" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+    <section id="about" class="max-w-4xl mx-auto px-8 py-32 text-center">
+        <h2 class="text-zinc-700 font-black text-xs uppercase tracking-[0.5em] mb-6">Our Mission</h2>
+        <p class="text-3xl font-light leading-relaxed">
+            NBS Studios is a high-performance development collective focused on pushing the limits of the <span class="nbs-blue">Roblox Engine</span>. We combine data-driven analytics with top-tier creative design to build experiences that define the next generation of social gaming.
+        </p>
+    </section>
+
+    <section id="games" class="max-w-7xl mx-auto px-8 py-24">
+        <h3 class="text-zinc-700 font-black text-xs uppercase tracking-[0.3em] mb-12 italic">Portfolio</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div class="game-card flex flex-col md:flex-row">
-                <div class="md:w-1/2 h-64 bg-zinc-900 overflow-hidden">
+                <div class="md:w-1/2 h-64 bg-zinc-900">
                     <img id="game-thumb" src="" class="w-full h-full object-cover opacity-0 transition-opacity duration-1000">
                 </div>
-                <div class="p-8 md:w-1/2 flex flex-col justify-center">
-                    <h4 id="game-name" class="text-3xl font-black uppercase tracking-tighter">FETCHING...</h4>
+                <div class="p-10 md:w-1/2 flex flex-col justify-center">
+                    <h4 id="game-name" class="text-4xl font-black uppercase tracking-tighter">FETCHING...</h4>
                     <div class="grid grid-cols-2 gap-4 mt-6">
                         <div>
-                            <p class="text-zinc-500 text-[10px] font-bold uppercase">Players</p>
+                            <p class="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">Players</p>
                             <p id="game-players" class="text-xl font-bold">--</p>
                         </div>
                         <div>
-                            <p class="text-zinc-500 text-[10px] font-bold uppercase">Rating</p>
+                            <p class="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">Rating</p>
                             <p id="game-likes" class="text-xl font-bold text-green-500">--</p>
                         </div>
                     </div>
-                    <a id="game-link" href="#" class="mt-8 block text-center border border-zinc-800 py-3 rounded-xl font-bold hover:bg-white hover:text-black transition">LAUNCH REHAUL</a>
+                    <a id="game-link" href="#" target="_blank" class="mt-8 block text-center border-2 border-white py-3 rounded-xl font-black hover:bg-white hover:text-black transition text-xs tracking-widest">PLAY</a>
                 </div>
+            </div>
+            <div class="game-card border-dashed border-zinc-800 bg-transparent flex items-center justify-center p-20">
+                <p class="text-zinc-800 font-black text-xl italic uppercase">Expansion in Progress...</p>
             </div>
         </div>
     </section>
 
-    <footer class="p-10 text-center border-t border-zinc-900 bg-zinc-950/50">
-        <img src="https://i.postimg.cc/rwpNPzBj/Frame-18.png" alt="NBS Blue" class="h-8 mx-auto mb-4 opacity-50">
-        <p class="text-zinc-700 text-[10px] font-bold tracking-[0.3em] uppercase">&copy; 2026 NBS STUDIOS | POWERED BY ROBLOX OPEN CLOUD</p>
+    <footer class="p-20 text-center border-t border-zinc-950 bg-black">
+        <img src="https://i.postimg.cc/rwpNPzBj/Frame-18.png" alt="NBS Blue" class="h-8 mx-auto mb-6 opacity-30 grayscale hover:grayscale-0 transition">
+        <p class="text-zinc-800 text-[10px] font-bold tracking-[0.5em] uppercase">&copy; 2026 NBS STUDIOS</p>
     </footer>
 
     <script>
         const PLACE_ID = "119317534126469";
-        const PROXY_URL = "https://roproxy-2026.p.rapidapi.com/v1/"; // Replace with your active proxy or RoTunnel URL
-        
-        async function fetchGameData() {
+        const PROXY = "https://apis.roproxy.com/";
+
+        // Standard 2026 platform metrics
+        const EST_CCU = 12000000;
+        const EST_DAU = 144000000;
+
+        function smartFormat(num) {
+            if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+            if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
+            return num;
+        }
+
+        async function fetchAnalytics() {
             try {
-                // 1. Get Universe ID from Place ID first
-                const universeRes = await fetch(`https://apis.roproxy.com/universes/v1/places/${PLACE_ID}/universe`);
-                const universeData = await universeRes.json();
-                const uId = universeData.universeId;
+                // 1. Get Universe ID
+                const uRes = await fetch(`${PROXY}universes/v1/places/${PLACE_ID}/universe`);
+                const { universeId } = await uRes.json();
 
-                // 2. Get Statistics
-                const statsRes = await fetch(`https://games.roproxy.com/v1/games?universeIds=${uId}`);
-                const statsData = await statsRes.json();
-                const game = statsData.data[0];
+                // 2. Get Live Stats
+                const sRes = await fetch(`https://games.roproxy.com/v1/games?universeIds=${universeId}`);
+                const sData = await sRes.json();
+                const game = sData.data[0];
 
-                // 3. Get Thumbnail
-                const thumbRes = await fetch(`https://thumbnails.roproxy.com/v1/games/multiget/thumbnails?universeIds=${uId}&size=768x432&format=Png`);
-                const thumbData = await thumbRes.json();
-
-                // Update UI
-                document.title = `NBS | ${game.name}`;
+                // Update UI elements
+                document.getElementById('total-playing').innerText = smartFormat(game.playing);
+                document.getElementById('game-players').innerText = smartFormat(game.playing);
+                document.getElementById('total-visits').innerText = smartFormat(game.visits);
                 document.getElementById('game-name').innerText = game.name;
-                document.getElementById('total-playing').innerText = game.playing.toLocaleString();
-                document.getElementById('game-players').innerText = game.playing.toLocaleString();
-                document.getElementById('total-visits').innerText = (game.visits / 1000000).toFixed(2) + "M+";
                 document.getElementById('game-link').href = `https://www.roblox.com/games/${PLACE_ID}`;
-                document.getElementById('game-thumb').src = thumbData.data[0].thumbnails[0].imageUrl;
-                document.getElementById('game-thumb').style.opacity = "1";
 
-                // Market Share Math
-                const ccuP = (game.playing / 11000000) * 100;
-                document.getElementById('platform-ccu').innerText = ccuP.toFixed(5) + "%";
-                document.getElementById('platform-dau').innerText = (ccuP * 1.8).toFixed(4) + "%";
+                // Market Share Logic
+                const shareCCU = (game.playing / EST_CCU) * 100;
+                const shareDAU = (game.playing * 1.5 / EST_DAU) * 100;
+                document.getElementById('platform-ccu').innerText = shareCCU.toFixed(4) + "%";
+                document.getElementById('platform-dau').innerText = shareDAU.toFixed(4) + "%";
+
+                // Thumbnail
+                const tRes = await fetch(`https://thumbnails.roproxy.com/v1/games/multiget/thumbnails?universeIds=${universeId}&size=768x432&format=Png`);
+                const tData = await tRes.json();
+                const thumb = document.getElementById('game-thumb');
+                thumb.src = tData.data[0].thumbnails[0].imageUrl;
+                thumb.style.opacity = "1";
+
+                // Likes
+                const vRes = await fetch(`https://games.roproxy.com/v1/games/votes?universeIds=${universeId}`);
+                const vData = await vRes.json();
+                const v = vData.data[0];
+                const ratio = Math.round((v.upVotes / (v.upVotes + v.downVotes)) * 100);
+                document.getElementById('game-likes').innerText = ratio + "%";
 
             } catch (err) {
-                console.warn("Retrying data handshake...");
-                // Fallback display if proxy is slow
-                document.getElementById('game-name').innerText = "REHAUL";
+                console.warn("Retrying data connection...");
             }
         }
 
-        fetchGameData();
-        setInterval(fetchGameData, 60000); 
+        fetchAnalytics();
+        setInterval(fetchAnalytics, 45000); // Live refresh
     </script>
 </body>
 </html>
