@@ -3,70 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Studio Portfolio | Similar to Do Big</title>
+    <title>NBS Studios | ReHaul</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        body { background-color: #0a0a0a; color: white; font-family: 'Inter', sans-serif; }
-        .gradient-text { background: linear-gradient(90deg, #fff, #888); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .game-card:hover { transform: translateY(-10px); transition: 0.3s; }
+        body { background-color: #000000; color: white; font-family: 'Inter', sans-serif; }
+        .nbs-blue { color: #3b82f6; } /* Matching the blue in your frame logo */
+        .nbs-gradient { background: linear-gradient(135deg, #3b82f6 0%, #000000 100%); }
+        .card-bg { background: #0a0a0a; border: 1px solid #1a1a1a; transition: 0.3s; }
+        .card-bg:hover { border-color: #3b82f6; transform: translateY(-5px); }
     </style>
 </head>
 <body>
-    <nav class="flex justify-between items-center p-8 max-w-7xl mx-auto">
-        <div class="text-2xl font-bold tracking-tighter">STUDIO<span class="text-blue-500">BIG</span></div>
-        <div class="space-x-8 hidden md:block">
-            <a href="#" class="hover:text-blue-500">Home</a>
-            <a href="#" class="hover:text-blue-500">About Us</a>
+    <nav class="flex justify-between items-center p-6 max-w-7xl mx-auto">
+        <div class="flex items-center gap-2">
+            <span class="text-3xl font-black tracking-tighter">NBS<span class="nbs-blue">STUDIOS</span></span>
+        </div>
+        <div class="hidden md:flex gap-8 font-medium">
             <a href="#" class="hover:text-blue-500">Games</a>
-            <a href="#" class="bg-white text-black px-6 py-2 rounded-full font-bold">Contact</a>
+            <a href="#" class="hover:text-blue-500">Stats</a>
+            <a href="https://www.roblox.com/groups/your-id" class="bg-blue-600 px-5 py-2 rounded-full font-bold hover:bg-blue-700">Join Group</a>
         </div>
     </nav>
 
-    <section class="text-center py-20 px-4">
-        <h1 class="text-5xl md:text-8xl font-black mb-6 gradient-text">WE BUILD THE FUTURE</h1>
-        <p class="text-gray-400 text-xl max-w-2xl mx-auto">Leading the next generation of online experiences through innovative development and strategic growth.</p>
+    <section class="text-center py-24 px-4">
+        <h1 class="text-6xl md:text-9xl font-black mb-4">NEXT BIG <span class="nbs-blue">STEP.</span></h1>
+        <p class="text-zinc-500 text-xl max-w-xl mx-auto italic">Powering the next generation of Roblox experiences.</p>
     </section>
 
-    <section class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto px-4 py-20 border-y border-gray-800">
-        <div class="text-center">
-            <div class="text-5xl font-bold text-blue-500">1.2B+</div>
-            <p class="text-gray-500 uppercase tracking-widest mt-2">Active Players</p>
-        </div>
-        <div class="text-center">
-            <div class="text-5xl font-bold text-blue-500">150B+</div>
-            <p class="text-gray-500 uppercase tracking-widest mt-2">Total Sessions</p>
-        </div>
-        <div class="text-center">
-            <div class="text-5xl font-bold text-blue-500">Top 3</div>
-            <p class="text-gray-500 uppercase tracking-widest mt-2">Global Publisher</p>
-        </div>
-    </section>
-
-    <section class="max-w-7xl mx-auto px-4 py-20">
-        <h2 class="text-3xl font-bold mb-12">Our Top Hits</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div class="game-card bg-zinc-900 rounded-2xl overflow-hidden border border-zinc-800">
-                <div class="h-48 bg-zinc-800 flex items-center justify-center text-4xl italic text-zinc-700">GAME THUMBNAIL</div>
-                <div class="p-6">
-                    <h3 class="text-xl font-bold">Blade Storm</h3>
-                    <p class="text-gray-400 mt-2">6.1B Plays</p>
-                    <button class="mt-4 border border-zinc-700 px-4 py-2 rounded-lg hover:bg-white hover:text-black">View Game</button>
-                </div>
+    <section class="max-w-5xl mx-auto px-4 pb-24">
+        <h2 class="text-sm uppercase tracking-widest text-zinc-600 mb-8 font-bold">Featured Experience</h2>
+        
+        <div class="card-bg rounded-3xl overflow-hidden flex flex-col md:flex-row items-center">
+            <div class="w-full md:w-1/2 h-64 bg-zinc-900 overflow-hidden">
+                <img id="game-thumb" src="" alt="ReHaul Thumbnail" class="w-full h-full object-cover opacity-0 transition-opacity duration-500">
             </div>
-            <div class="game-card bg-zinc-900 rounded-2xl overflow-hidden border border-zinc-800">
-                <div class="h-48 bg-zinc-800 flex items-center justify-center text-4xl italic text-zinc-700">GAME THUMBNAIL</div>
-                <div class="p-6">
-                    <h3 class="text-xl font-bold">Ocean Quest</h3>
-                    <p class="text-gray-400 mt-2">4.4B Plays</p>
-                    <button class="mt-4 border border-zinc-700 px-4 py-2 rounded-lg hover:bg-white hover:text-black">View Game</button>
+            
+            <div class="p-10 w-full md:w-1/2">
+                <h3 class="text-4xl font-black mb-2 uppercase">ReHaul</h3>
+                <div class="flex gap-6 mb-6">
+                    <div>
+                        <p class="text-zinc-500 text-xs uppercase font-bold">Active Players</p>
+                        <p id="player-count" class="text-3xl font-bold nbs-blue">--</p>
+                    </div>
+                    <div>
+                        <p class="text-zinc-500 text-xs uppercase font-bold">Total Visits</p>
+                        <p id="visit-count" class="text-3xl font-bold">--</p>
+                    </div>
                 </div>
+                <a href="https://www.roblox.com/games/119317534126469/ReHaul" class="inline-block bg-white text-black px-8 py-3 rounded-xl font-black hover:scale-105 transition-transform">PLAY NOW</a>
             </div>
         </div>
     </section>
 
-    <footer class="text-center py-10 text-gray-600 border-t border-gray-800">
-        <p>&copy; 2024 Your Studio Name. All rights reserved.</p>
-    </footer>
+    <script>
+        // Your Universe ID for ReHaul (obtained via Roblox API)
+        const universeId = "6821213600"; // This is the internal ID for your game
+        
+        async function fetchRobloxData() {
+            try {
+                // Fetch Game Details (Players/Visits)
+                const gameRes = await fetch(`https://games.roproxy.com/v1/games?universeIds=${universeId}`);
+                const gameData = await gameRes.json();
+                const stats = gameData.data[0];
+
+                document.getElementById('player-count').innerText = stats.playing.toLocaleString();
+                document.getElementById('visit-count').innerText = stats.visits.toLocaleString();
+
+                // Fetch Game Thumbnail
+                const thumbRes = await fetch(`https://thumbnails.roproxy.com/v1/games/multiget/thumbnails?universeIds=${universeId}&size=768x432&format=Png&isCircular=false`);
+                const thumbData = await thumbRes.json();
+                
+                const thumbImg = document.getElementById('game-thumb');
+                thumbImg.src = thumbData.data[0].thumbnails[0].imageUrl;
+                thumbImg.classList.remove('opacity-0');
+
+            } catch (error) {
+                console.error("Error fetching Roblox data:", error);
+                document.getElementById('player-count').innerText = "OFFLINE";
+            }
+        }
+
+        fetchRobloxData();
+        // Refresh every 30 seconds
+        setInterval(fetchRobloxData, 30000);
+    </script>
 </body>
 </html>
