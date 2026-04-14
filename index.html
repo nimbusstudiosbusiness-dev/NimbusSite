@@ -3,89 +3,127 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NBS Studios | ReHaul</title>
+    <title>NBS Studios | Statistics</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background-color: #000000; color: white; font-family: 'Inter', sans-serif; }
-        .nbs-blue { color: #3b82f6; } /* Matching the blue in your frame logo */
-        .nbs-gradient { background: linear-gradient(135deg, #3b82f6 0%, #000000 100%); }
-        .card-bg { background: #0a0a0a; border: 1px solid #1a1a1a; transition: 0.3s; }
-        .card-bg:hover { border-color: #3b82f6; transform: translateY(-5px); }
+        body { background-color: #000; color: white; font-family: 'Inter', sans-serif; }
+        .nbs-blue { color: #3b82f6; }
+        .stat-card { border-left: 1px solid #1a1a1a; padding-left: 2rem; }
+        .game-card { background: #0a0a0a; border: 1px solid #1a1a1a; border-radius: 24px; overflow: hidden; transition: 0.3s; }
+        .game-card:hover { border-color: #3b82f6; transform: translateY(-5px); }
     </style>
 </head>
 <body>
-    <nav class="flex justify-between items-center p-6 max-w-7xl mx-auto">
-        <div class="flex items-center gap-2">
-            <span class="text-3xl font-black tracking-tighter">NBS<span class="nbs-blue">STUDIOS</span></span>
-        </div>
-        <div class="hidden md:flex gap-8 font-medium">
+
+    <nav class="flex justify-between items-center p-8 max-w-7xl mx-auto">
+        <img src="https://i.postimg.cc/VLmRXK43/Group-29.png" alt="NBS Logo" class="h-12">
+        <div class="hidden md:flex gap-10 font-bold uppercase tracking-widest text-sm">
             <a href="#" class="hover:text-blue-500">Games</a>
-            <a href="#" class="hover:text-blue-500">Stats</a>
-            <a href="https://www.roblox.com/groups/your-id" class="bg-blue-600 px-5 py-2 rounded-full font-bold hover:bg-blue-700">Join Group</a>
+            <a href="#" class="hover:text-blue-500">Platform Data</a>
+            <a href="#" class="bg-blue-600 px-6 py-2 rounded-full">Contact</a>
         </div>
     </nav>
 
-    <section class="text-center py-24 px-4">
-        <h1 class="text-6xl md:text-9xl font-black mb-4">NEXT BIG <span class="nbs-blue">STEP.</span></h1>
-        <p class="text-zinc-500 text-xl max-w-xl mx-auto italic">Powering the next generation of Roblox experiences.</p>
+    <header class="text-center py-20">
+        <h1 class="text-7xl md:text-9xl font-black tracking-tighter mb-4">NEXT BIG <span class="nbs-blue">STEP.</span></h1>
+        <p class="text-zinc-500 text-xl font-medium">Leading the Roblox frontier through data-driven development.</p>
+    </header>
+
+    <section class="max-w-7xl mx-auto px-6 py-16 grid grid-cols-1 md:grid-cols-4 gap-10 border-y border-zinc-900">
+        <div class="stat-card">
+            <p class="text-zinc-500 text-xs uppercase font-bold tracking-widest">Total Playing</p>
+            <h2 id="total-playing" class="text-5xl font-black mt-2">--</h2>
+        </div>
+        <div class="stat-card">
+            <p class="text-zinc-500 text-xs uppercase font-bold tracking-widest">Total Visits</p>
+            <h2 id="total-visits" class="text-5xl font-black mt-2">--</h2>
+        </div>
+        <div class="stat-card">
+            <p class="text-zinc-500 text-xs uppercase font-bold tracking-widest">% of Platform CCU</p>
+            <h2 id="platform-ccu" class="text-5xl font-black nbs-blue mt-2">0.02%</h2>
+        </div>
+        <div class="stat-card">
+            <p class="text-zinc-500 text-xs uppercase font-bold tracking-widest">% of Platform DAU</p>
+            <h2 id="platform-dau" class="text-5xl font-black nbs-blue mt-2">0.05%</h2>
+        </div>
     </section>
 
-    <section class="max-w-5xl mx-auto px-4 pb-24">
-        <h2 class="text-sm uppercase tracking-widest text-zinc-600 mb-8 font-bold">Featured Experience</h2>
+    <section class="max-w-7xl mx-auto px-6 py-24">
+        <h3 class="text-2xl font-black mb-12 uppercase italic">Active Portfolio</h3>
         
-        <div class="card-bg rounded-3xl overflow-hidden flex flex-col md:flex-row items-center">
-            <div class="w-full md:w-1/2 h-64 bg-zinc-900 overflow-hidden">
-                <img id="game-thumb" src="" alt="ReHaul Thumbnail" class="w-full h-full object-cover opacity-0 transition-opacity duration-500">
-            </div>
-            
-            <div class="p-10 w-full md:w-1/2">
-                <h3 class="text-4xl font-black mb-2 uppercase">ReHaul</h3>
-                <div class="flex gap-6 mb-6">
-                    <div>
-                        <p class="text-zinc-500 text-xs uppercase font-bold">Active Players</p>
-                        <p id="player-count" class="text-3xl font-bold nbs-blue">--</p>
-                    </div>
-                    <div>
-                        <p class="text-zinc-500 text-xs uppercase font-bold">Total Visits</p>
-                        <p id="visit-count" class="text-3xl font-bold">--</p>
-                    </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="game-card flex flex-col md:flex-row">
+                <div class="md:w-1/2 h-64">
+                    <img id="rehaul-thumb" src="" class="w-full h-full object-cover opacity-0 transition-opacity">
                 </div>
-                <a href="https://www.roblox.com/games/119317534126469/ReHaul" class="inline-block bg-white text-black px-8 py-3 rounded-xl font-black hover:scale-105 transition-transform">PLAY NOW</a>
+                <div class="p-8 md:w-1/2 flex flex-col justify-center">
+                    <h4 class="text-3xl font-black">REHAUL</h4>
+                    <div class="grid grid-cols-2 gap-4 mt-6">
+                        <div>
+                            <p class="text-zinc-500 text-xs font-bold uppercase">Playing</p>
+                            <p id="rehaul-players" class="text-xl font-bold">--</p>
+                        </div>
+                        <div>
+                            <p class="text-zinc-500 text-xs font-bold uppercase">Rating</p>
+                            <p id="rehaul-likes" class="text-xl font-bold text-green-500">--</p>
+                        </div>
+                    </div>
+                    <a href="https://www.roblox.com/games/119317534126469/ReHaul" class="mt-8 inline-block text-center border-2 border-white py-3 rounded-xl font-bold hover:bg-white hover:text-black transition">VIEW GAME</a>
+                </div>
+            </div>
+
+            <div class="game-card flex items-center justify-center border-dashed border-zinc-800 bg-transparent">
+                <p class="text-zinc-700 font-black text-xl italic uppercase">Upcoming Experience...</p>
             </div>
         </div>
     </section>
 
+    <footer class="p-10 text-center border-t border-zinc-900">
+        <img src="https://i.postimg.cc/rwpNPzBj/Frame-18.png" alt="NBS Blue" class="h-10 mx-auto mb-4 rounded-lg">
+        <p class="text-zinc-600 text-sm font-bold">&copy; 2024 NBS STUDIOS. ALL RIGHTS RESERVED.</p>
+    </footer>
+
     <script>
-        // Your Universe ID for ReHaul (obtained via Roblox API)
-        const universeId = "6821213600"; // This is the internal ID for your game
-        
-        async function fetchRobloxData() {
+        const universeId = "6821213600"; // ReHaul Universe ID
+
+        async function updateStats() {
             try {
-                // Fetch Game Details (Players/Visits)
+                // 1. Fetch Game Basic Data
                 const gameRes = await fetch(`https://games.roproxy.com/v1/games?universeIds=${universeId}`);
                 const gameData = await gameRes.json();
-                const stats = gameData.data[0];
+                const game = gameData.data[0];
 
-                document.getElementById('player-count').innerText = stats.playing.toLocaleString();
-                document.getElementById('visit-count').innerText = stats.visits.toLocaleString();
+                // Update Total Bar & Specific Game Card
+                document.getElementById('total-playing').innerText = game.playing.toLocaleString();
+                document.getElementById('rehaul-players').innerText = game.playing.toLocaleString();
+                document.getElementById('total-visits').innerText = formatNumber(game.visits);
 
-                // Fetch Game Thumbnail
-                const thumbRes = await fetch(`https://thumbnails.roproxy.com/v1/games/multiget/thumbnails?universeIds=${universeId}&size=768x432&format=Png&isCircular=false`);
+                // 2. Fetch Votes (Like Ratio)
+                const voteRes = await fetch(`https://games.roproxy.com/v1/games/votes?universeIds=${universeId}`);
+                const voteData = await voteRes.json();
+                const votes = voteData.data[0];
+                const ratio = Math.round((votes.upVotes / (votes.upVotes + votes.downVotes)) * 100);
+                document.getElementById('rehaul-likes').innerText = ratio + "%";
+
+                // 3. Fetch Thumbnail
+                const thumbRes = await fetch(`https://thumbnails.roproxy.com/v1/games/multiget/thumbnails?universeIds=${universeId}&size=768x432&format=Png`);
                 const thumbData = await thumbRes.json();
-                
-                const thumbImg = document.getElementById('game-thumb');
-                thumbImg.src = thumbData.data[0].thumbnails[0].imageUrl;
-                thumbImg.classList.remove('opacity-0');
+                const thumb = document.getElementById('rehaul-thumb');
+                thumb.src = thumbData.data[0].thumbnails[0].imageUrl;
+                thumb.classList.remove('opacity-0');
 
-            } catch (error) {
-                console.error("Error fetching Roblox data:", error);
-                document.getElementById('player-count').innerText = "OFFLINE";
-            }
+            } catch (e) { console.error("API Error:", e); }
         }
 
-        fetchRobloxData();
-        // Refresh every 30 seconds
-        setInterval(fetchRobloxData, 30000);
+        // Helper to turn 1,000,000 into 1M
+        function formatNumber(num) {
+            if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M+';
+            if (num >= 1000) return (num / 1000).toFixed(1) + 'K+';
+            return num;
+        }
+
+        updateStats();
+        setInterval(updateStats, 60000); // Update every minute
     </script>
 </body>
 </html>
