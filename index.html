@@ -10,8 +10,8 @@
         body { background-color: #000; color: white; font-family: 'Inter', sans-serif; scroll-behavior: smooth; }
         .nbs-blue { color: #3b82f6; }
         .stat-card { border-left: 1px solid #1a1a1a; padding-left: 2rem; }
-        .game-card { background: #0a0a0a; border: 1px solid #1a1a1a; border-radius: 24px; overflow: hidden; transition: 0.4s; }
-        .game-card:hover { border-color: #3b82f6; transform: translateY(-5px); }
+        .game-card { background: #0a0a0a; border: 1px solid #1a1a1a; border-radius: 24px; overflow: hidden; transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        .game-card:hover { border-color: #3b82f6; transform: translateY(-8px); box-shadow: 0 20px 40px rgba(59, 130, 246, 0.1); }
         .nav-link { font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; transition: 0.3s; cursor: pointer; }
         .nav-link:hover { color: #3b82f6; }
     </style>
@@ -42,26 +42,28 @@
             <h2 id="total-visits" class="text-5xl font-black mt-2">--</h2>
         </div>
         <div class="stat-card">
-            <p class="text-zinc-500 text-[10px] uppercase font-bold tracking-widest">Platform Share</p>
+            <p class="text-zinc-500 text-[10px] uppercase font-bold tracking-widest">Platform CCU</p>
             <h2 id="platform-ccu" class="text-4xl font-black nbs-blue mt-2">--</h2>
         </div>
         <div class="stat-card">
-            <p class="text-zinc-500 text-[10px] uppercase font-bold tracking-widest">Network Reach</p>
+            <p class="text-zinc-500 text-[10px] uppercase font-bold tracking-widest">Platform DAU</p>
             <h2 id="platform-dau" class="text-4xl font-black nbs-blue mt-2">--</h2>
         </div>
     </section>
 
     <section id="about" class="max-w-4xl mx-auto px-8 py-32 text-center">
         <h2 class="text-zinc-700 font-black text-xs uppercase tracking-[0.5em] mb-6">Our Mission</h2>
-        <p class="text-3xl font-light leading-relaxed">
-            Nimbus Studios is a high performance development collective focused on pushing the limits of the <span class="nbs-blue">Roblox Engine</span>.
+        <p class="text-3xl font-light leading-relaxed text-zinc-300">
+            Nimbus Studios is a high performance development collective focused on pushing the limits of the <span class="nbs-blue font-bold">Roblox Engine</span>.
         </p>
     </section>
 
     <section id="games" class="max-w-7xl mx-auto px-8 py-24">
         <h3 class="text-zinc-700 font-black text-xs uppercase tracking-[0.3em] mb-12 italic">Portfolio</h3>
         <div id="games-container" class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <p class="text-zinc-800 font-bold uppercase tracking-widest">Initialising Cloud Handshake...</p>
+            <div class="col-span-full py-20 text-center">
+                <p id="status-msg" class="text-zinc-800 font-bold uppercase tracking-[0.4em] animate-pulse text-sm">Synchronizing Cloud Data...</p>
+            </div>
         </div>
     </section>
 
@@ -71,16 +73,15 @@
     </footer>
 
     <script>
-        const GAME_MAP = {
-            "9248621375": "111865350831047",
-            "9597132710": "129661264144098",
-            "9464648181": "132769566461685",
-            "9691359376": "97697276454887"
-        };
-        const UNIVERSE_IDS = Object.keys(GAME_MAP).join(',');
+        const GAME_DATA = [
+            { uId: "9248621375", pId: "111865350831047" },
+            { uId: "9597132710", pId: "129661264144098" },
+            { uId: "9464648181", pId: "132769566461685" },
+            { uId: "9691359376", pId: "97697276454887" }
+        ];
 
-        // Resilient Batch Proxy
-        const PROXY = "https://corsproxy.io/?";
+        // NEW 2026 PROXY (Codetabs is currently unblocked)
+        const PROXY = "https://api.codetabs.com/v1/proxy?quest=";
 
         function smartFormat(num) {
             if (!num || isNaN(num)) return "0";
@@ -89,58 +90,68 @@
             return num.toLocaleString();
         }
 
-        async function fetchBatchData() {
+        async function updateNimbus() {
+            const container = document.getElementById('games-container');
+            const universeIds = GAME_DATA.map(g => g.uId).join(',');
+            
             try {
-                const infoUrl = `https://games.roblox.com/v1/games?universeIds=${UNIVERSE_IDS}`;
-                const thumbUrl = `https://thumbnails.roblox.com/v1/games/multiget/thumbnails?universeIds=${UNIVERSE_IDS}&size=768x432&format=Png`;
+                // Fetch Data via Proxy
+                const infoUrl = `https://games.roblox.com/v1/games?universeIds=${universeIds}`;
+                const response = await fetch(PROXY + encodeURIComponent(infoUrl));
+                const data = await response.json();
 
-                const [infoRes, thumbRes] = await Promise.all([
-                    fetch(PROXY + encodeURIComponent(infoUrl)),
-                    fetch(PROXY + encodeURIComponent(thumbUrl))
-                ]);
-
-                const infoData = await infoRes.json();
+                // Fetch Thumbnails (Directly, usually avoids 403)
+                const thumbUrl = `https://thumbnails.roblox.com/v1/games/multiget/thumbnails?universeIds=${universeIds}&size=768x432&format=Png`;
+                const thumbRes = await fetch(PROXY + encodeURIComponent(thumbUrl));
                 const thumbData = await thumbRes.json();
 
                 let totalP = 0;
                 let totalV = 0;
-                let htmlBuffer = "";
+                let html = "";
 
-                infoData.data.forEach((game, i) => {
-                    const thumb = thumbData.data[i].thumbnails[0].imageUrl;
+                data.data.forEach((game, index) => {
+                    const thumb = thumbData.data[index]?.thumbnails[0]?.imageUrl || "";
+                    const mapping = GAME_DATA.find(m => m.uId == game.id);
+                    
                     totalP += game.playing;
                     totalV += game.visits;
 
-                    htmlBuffer += `
-                        <div class="game-card flex flex-col md:flex-row opacity-100 transition-opacity">
+                    html += `
+                        <div class="game-card flex flex-col md:flex-row">
                             <div class="md:w-1/2 h-64 bg-zinc-900">
-                                <img src="${thumb}" class="w-full h-full object-cover">
+                                <img src="${thumb}" class="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700">
                             </div>
                             <div class="p-10 md:w-1/2 flex flex-col justify-center">
                                 <h4 class="text-3xl font-black uppercase tracking-tighter">${game.name}</h4>
                                 <div class="grid grid-cols-2 gap-4 mt-6">
-                                    <div><p class="text-zinc-500 text-[10px] font-bold">ACTIVE</p><p class="text-xl font-bold">${smartFormat(game.playing)}</p></div>
-                                    <div><p class="text-zinc-500 text-[10px] font-bold">VISITS</p><p class="text-xl font-bold text-blue-500">${smartFormat(game.visits)}</p></div>
+                                    <div>
+                                        <p class="text-zinc-600 text-[10px] font-bold uppercase tracking-widest">Active</p>
+                                        <p class="text-xl font-bold text-white">${smartFormat(game.playing)}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-zinc-600 text-[10px] font-bold uppercase tracking-widest">Total Visits</p>
+                                        <p class="text-xl font-bold text-blue-500">${smartFormat(game.visits)}</p>
+                                    </div>
                                 </div>
-                                <a href="https://www.roblox.com/games/${GAME_MAP[game.id]}" target="_blank" class="mt-8 block text-center border-2 border-white py-3 rounded-xl font-black hover:bg-white hover:text-black transition text-[10px] tracking-widest uppercase">Play</a>
+                                <a href="https://www.roblox.com/games/${mapping.pId}" target="_blank" class="mt-8 block text-center border border-white/10 py-3 rounded-xl font-black hover:bg-white hover:text-black transition text-[10px] tracking-widest uppercase">Launch Experience</a>
                             </div>
                         </div>`;
                 });
 
-                document.getElementById('games-container').innerHTML = htmlBuffer;
+                container.innerHTML = html;
                 document.getElementById('total-playing').innerText = smartFormat(totalP);
                 document.getElementById('total-visits').innerText = smartFormat(totalV);
                 document.getElementById('platform-ccu').innerText = (totalP / 12500000 * 100).toFixed(5) + "%";
                 document.getElementById('platform-dau').innerText = (totalP * 1.6 / 155000000 * 100).toFixed(4) + "%";
 
             } catch (err) {
-                console.error("Connection Interrupted. Retrying...");
-                document.getElementById('games-container').innerHTML = `<p class="text-red-500 font-bold">PROXY TIMEOUT. REFRESHING...</p>`;
+                console.error("Critical Connection Error", err);
+                document.getElementById('status-msg').innerText = "CLOUD HANDSHAKE FAILED. RETRYING...";
             }
         }
 
-        fetchBatchData();
-        setInterval(fetchBatchData, 90000);
+        updateNimbus();
+        setInterval(updateNimbus, 120000);
     </script>
 </body>
 </html>
