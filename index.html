@@ -10,10 +10,28 @@
         body { background-color: #000; color: white; font-family: 'Inter', sans-serif; scroll-behavior: smooth; }
         .nbs-blue { color: #3b82f6; }
         .stat-card { border-left: 1px solid #1a1a1a; padding-left: 2rem; }
-        .game-card { background: #0a0a0a; border: 1px solid #1a1a1a; border-radius: 24px; overflow: hidden; transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
-        .game-card:hover { border-color: #3b82f6; transform: translateY(-8px); box-shadow: 0 20px 40px rgba(59, 130, 246, 0.1); }
+        
+        /* Interactive Game Card */
+        .game-card { 
+            background: #0a0a0a; 
+            border: 1px solid #1a1a1a; 
+            border-radius: 24px; 
+            overflow: hidden; 
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+        }
+        
+        .game-card:hover { 
+            border-color: #3b82f6; 
+            transform: scale(1.02); 
+            box-shadow: 0 0 30px rgba(59, 130, 246, 0.15); 
+        }
+
         .nav-link { font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; transition: 0.3s; cursor: pointer; }
         .nav-link:hover { color: #3b82f6; }
+        
+        /* Clean Image Styling */
+        .game-thumb { width: 100%; height: 100%; object-cover: cover; transition: transform 0.6s ease; }
+        .game-card:hover .game-thumb { transform: scale(1.1); }
     </style>
 </head>
 <body>
@@ -23,7 +41,7 @@
         <div class="flex items-center gap-10">
             <a href="#games" class="nav-link text-zinc-400">Games</a>
             <a href="#about" class="nav-link text-zinc-400">About Us</a>
-            <a href="https://www.roblox.com/groups/9826231921" target="_blank" class="bg-blue-600 px-6 py-2 rounded-full font-bold uppercase text-[0.7rem] hover:bg-blue-700 transition">Group Page</a>
+            <a href="https://www.roblox.com/groups/9826231921" target="_blank" class="bg-blue-600 px-8 py-2 rounded-full font-bold uppercase text-[0.7rem] hover:bg-blue-700 transition transform hover:scale-105">Group Page</a>
         </div>
     </nav>
 
@@ -42,11 +60,11 @@
             <h2 id="total-visits" class="text-5xl font-black mt-2">--</h2>
         </div>
         <div class="stat-card">
-            <p class="text-zinc-500 text-[10px] uppercase font-bold tracking-widest">Platform CCU</p>
+            <p class="text-zinc-500 text-[10px] uppercase font-bold tracking-widest">Platform Share</p>
             <h2 id="platform-ccu" class="text-4xl font-black nbs-blue mt-2">--</h2>
         </div>
         <div class="stat-card">
-            <p class="text-zinc-500 text-[10px] uppercase font-bold tracking-widest">Platform DAU</p>
+            <p class="text-zinc-500 text-[10px] uppercase font-bold tracking-widest">Network Impact</p>
             <h2 id="platform-dau" class="text-4xl font-black nbs-blue mt-2">--</h2>
         </div>
     </section>
@@ -61,9 +79,7 @@
     <section id="games" class="max-w-7xl mx-auto px-8 py-24">
         <h3 class="text-zinc-700 font-black text-xs uppercase tracking-[0.3em] mb-12 italic">Portfolio</h3>
         <div id="games-container" class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div class="col-span-full py-20 text-center">
-                <p id="status-msg" class="text-zinc-800 font-bold uppercase tracking-[0.4em] animate-pulse text-sm">Synchronizing Cloud Data...</p>
-            </div>
+            <p class="text-zinc-800 font-bold uppercase tracking-widest">Connecting to Roblox Cloud...</p>
         </div>
     </section>
 
@@ -80,7 +96,6 @@
             { uId: "9691359376", pId: "97697276454887" }
         ];
 
-        // NEW 2026 PROXY (Codetabs is currently unblocked)
         const PROXY = "https://api.codetabs.com/v1/proxy?quest=";
 
         function smartFormat(num) {
@@ -95,12 +110,10 @@
             const universeIds = GAME_DATA.map(g => g.uId).join(',');
             
             try {
-                // Fetch Data via Proxy
                 const infoUrl = `https://games.roblox.com/v1/games?universeIds=${universeIds}`;
                 const response = await fetch(PROXY + encodeURIComponent(infoUrl));
                 const data = await response.json();
 
-                // Fetch Thumbnails (Directly, usually avoids 403)
                 const thumbUrl = `https://thumbnails.roblox.com/v1/games/multiget/thumbnails?universeIds=${universeIds}&size=768x432&format=Png`;
                 const thumbRes = await fetch(PROXY + encodeURIComponent(thumbUrl));
                 const thumbData = await thumbRes.json();
@@ -118,8 +131,8 @@
 
                     html += `
                         <div class="game-card flex flex-col md:flex-row">
-                            <div class="md:w-1/2 h-64 bg-zinc-900">
-                                <img src="${thumb}" class="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700">
+                            <div class="md:w-1/2 h-64 bg-zinc-900 overflow-hidden">
+                                <img src="${thumb}" class="game-thumb">
                             </div>
                             <div class="p-10 md:w-1/2 flex flex-col justify-center">
                                 <h4 class="text-3xl font-black uppercase tracking-tighter">${game.name}</h4>
@@ -133,7 +146,7 @@
                                         <p class="text-xl font-bold text-blue-500">${smartFormat(game.visits)}</p>
                                     </div>
                                 </div>
-                                <a href="https://www.roblox.com/games/${mapping.pId}" target="_blank" class="mt-8 block text-center border border-white/10 py-3 rounded-xl font-black hover:bg-white hover:text-black transition text-[10px] tracking-widest uppercase">Launch Experience</a>
+                                <a href="https://www.roblox.com/games/${mapping.pId}" target="_blank" class="mt-8 block text-center bg-white text-black py-3 rounded-xl font-black hover:bg-blue-600 hover:text-white transition transform active:scale-95 text-[10px] tracking-[0.3em] uppercase">Play</a>
                             </div>
                         </div>`;
                 });
@@ -145,8 +158,7 @@
                 document.getElementById('platform-dau').innerText = (totalP * 1.6 / 155000000 * 100).toFixed(4) + "%";
 
             } catch (err) {
-                console.error("Critical Connection Error", err);
-                document.getElementById('status-msg').innerText = "CLOUD HANDSHAKE FAILED. RETRYING...";
+                console.error("Sync Error", err);
             }
         }
 
