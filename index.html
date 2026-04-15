@@ -9,19 +9,24 @@
     <style>
         body { background-color: #000; color: white; font-family: 'Inter', sans-serif; scroll-behavior: smooth; }
         .nbs-blue { color: #3b82f6; }
-        .stat-card { border-left: 1px solid #1a1a1a; padding-left: 2rem; }
-        .game-card { background: #0a0a0a; border: 1px solid #1a1a1a; border-radius: 24px; overflow: hidden; transition: 0.4s; }
+        .stat-card { border-left: 1px solid #1a1a1a; padding-left: 2rem; min-height: 100px; }
+        .game-card { background: #0a0a0a; border: 1px solid #1a1a1a; border-radius: 24px; overflow: hidden; transition: 0.4s; opacity: 0; transform: translateY(10px); }
+        .game-card.loaded { opacity: 1; transform: translateY(0); }
         .game-card:hover { border-color: #3b82f6; transform: translateY(-5px); }
+        .nav-link { font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; transition: 0.3s; cursor: pointer; }
+        .nav-link:hover { color: #3b82f6; }
     </style>
 </head>
 <body>
 
     <nav class="max-w-7xl mx-auto px-8 py-10 flex justify-between items-center">
-        <img src="https://i.postimg.cc/VLmRXK43/Group-29.png" alt="Nimbus Logo" class="h-10">
-        <div class="flex items-center gap-10 font-bold uppercase tracking-tighter text-sm">
-            <a href="#games" class="hover:text-blue-500 transition">Games</a>
-            <a href="#about" class="hover:text-blue-500 transition">About Us</a>
-            <a href="https://www.roblox.com/groups/9826231921" target="_blank" class="bg-blue-600 px-6 py-2 rounded-full hover:bg-blue-700 transition">Group Page</a>
+        <div class="flex items-center gap-3">
+            <img src="https://i.postimg.cc/VLmRXK43/Group-29.png" alt="Nimbus Logo" class="h-10">
+        </div>
+        <div class="flex items-center gap-10">
+            <a href="#games" class="nav-link">Games</a>
+            <a href="#about" class="nav-link">About Us</a>
+            <a href="https://www.roblox.com/groups/9826231921" target="_blank" class="bg-blue-600 px-6 py-2 rounded-full font-bold uppercase text-[0.7rem] hover:bg-blue-700 transition">Group Page</a>
         </div>
     </nav>
 
@@ -40,11 +45,11 @@
             <h2 id="total-visits" class="text-5xl font-black mt-2">--</h2>
         </div>
         <div class="stat-card">
-            <p class="text-zinc-500 text-[10px] uppercase font-bold tracking-widest">Platform Share</p>
+            <p class="text-zinc-500 text-[10px] uppercase font-bold tracking-widest">% of Platform CCU</p>
             <h2 id="platform-ccu" class="text-4xl font-black nbs-blue mt-2">--</h2>
         </div>
         <div class="stat-card">
-            <p class="text-zinc-500 text-[10px] uppercase font-bold tracking-widest">Network DAU</p>
+            <p class="text-zinc-500 text-[10px] uppercase font-bold tracking-widest">% of Platform DAU</p>
             <h2 id="platform-dau" class="text-4xl font-black nbs-blue mt-2">--</h2>
         </div>
     </section>
@@ -52,7 +57,7 @@
     <section id="about" class="max-w-4xl mx-auto px-8 py-32 text-center">
         <h2 class="text-zinc-700 font-black text-xs uppercase tracking-[0.5em] mb-6">Our Mission</h2>
         <p class="text-3xl font-light leading-relaxed">
-            Nimbus Studios is a high performance development collective focused on pushing the limits of the <span class="nbs-blue">Roblox Engine</span>.
+            Nimbus Studios is a high performance development collective focused on pushing the limits of the <span class="nbs-blue">Roblox Engine</span>. We combine data-driven analytics with top-tier creative design to build experiences that define the next generation of social gaming.
         </p>
     </section>
 
@@ -63,79 +68,109 @@
     </section>
 
     <footer class="p-20 text-center border-t border-zinc-950 bg-black">
+        <img src="https://i.postimg.cc/rwpNPzBj/Frame-18.png" alt="Nimbus Icon" class="h-8 mx-auto mb-6 opacity-30">
         <p class="text-zinc-800 text-[10px] font-bold tracking-[0.5em] uppercase">&copy; 2026 Nimbus Studios</p>
     </footer>
 
     <script>
-        const GAME_MAP = {
-            "9248621375": "111865350831047",
-            "9597132710": "129661264144098",
-            "9464648181": "132769566461685",
-            "9691359376": "97697276454887"
-        };
-        const UNIVERSE_IDS = Object.keys(GAME_MAP).join(',');
+        const GAMES_CONFIG = [
+            { uId: "9248621375", pId: "111865350831047" },
+            { uId: "9597132710", pId: "129661264144098" },
+            { uId: "9464648181", pId: "132769566461685" },
+            { uId: "9691359376", pId: "97697276454887" }
+        ];
+
+        const PROXY_BASE = "https://api.allorigins.win/raw?url=";
 
         function smartFormat(num) {
-            if (!num) return "0";
+            if (!num || isNaN(num)) return "0";
             if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
             if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
             return num.toLocaleString();
         }
 
-        async function loadNimbusData() {
+        async function fetchGameData(game) {
             try {
-                // SINGLE BATCH FETCH (Prevents 403 Errors)
-                const [statsRes, votesRes, thumbRes] = await Promise.all([
-                    fetch(`https://games.roproxy.com/v1/games?universeIds=${UNIVERSE_IDS}`),
-                    fetch(`https://games.roproxy.com/v1/games/votes?universeIds=${UNIVERSE_IDS}`),
-                    fetch(`https://thumbnails.roproxy.com/v1/games/multiget/thumbnails?universeIds=${UNIVERSE_IDS}&size=768x432&format=Png`)
+                // Fetch basic info and thumbnail
+                const infoUrl = encodeURIComponent(`https://games.roblox.com/v1/games?universeIds=${game.uId}`);
+                const thumbUrl = encodeURIComponent(`https://thumbnails.roblox.com/v1/games/multiget/thumbnails?universeIds=${game.uId}&size=768x432&format=Png`);
+                const voteUrl = encodeURIComponent(`https://games.roblox.com/v1/games/votes?universeIds=${game.uId}`);
+
+                const [iRes, tRes, vRes] = await Promise.all([
+                    fetch(PROXY_BASE + infoUrl),
+                    fetch(PROXY_BASE + thumbUrl),
+                    fetch(PROXY_BASE + voteUrl)
                 ]);
 
-                const stats = await statsRes.json();
-                const votes = await votesRes.json();
-                const thumbs = await thumbRes.json();
+                const iData = await iRes.json();
+                const tData = await tRes.json();
+                const vData = await vRes.json();
 
-                let totalP = 0;
-                let totalV = 0;
-                let cardsHtml = "";
+                const g = iData.data[0];
+                const v = vData.data[0];
+                const ratio = (v.upVotes + v.downVotes) > 0 ? Math.round((v.upVotes / (v.upVotes + v.downVotes)) * 100) : 0;
 
-                stats.data.forEach((game, i) => {
-                    const v = votes.data[i];
-                    const t = thumbs.data[i].thumbnails[0].imageUrl;
-                    const ratio = (v.upVotes + v.downVotes) > 0 ? Math.round((v.upVotes / (v.upVotes + v.downVotes)) * 100) : 0;
-                    
-                    totalP += game.playing;
-                    totalV += game.visits;
-
-                    cardsHtml += `
-                        <div class="game-card flex flex-col md:flex-row">
-                            <div class="md:w-1/2 h-64 bg-zinc-900">
-                                <img src="${t}" class="w-full h-full object-cover">
-                            </div>
-                            <div class="p-10 md:w-1/2 flex flex-col justify-center">
-                                <h4 class="text-3xl font-black uppercase tracking-tighter">${game.name}</h4>
-                                <div class="grid grid-cols-2 gap-4 mt-6">
-                                    <div><p class="text-zinc-500 text-[10px] font-bold">ACTIVE</p><p class="text-xl font-bold">${smartFormat(game.playing)}</p></div>
-                                    <div><p class="text-zinc-500 text-[10px] font-bold">RATING</p><p class="text-xl font-bold text-green-500">${ratio}%</p></div>
-                                </div>
-                                <a href="https://www.roblox.com/games/${GAME_MAP[game.id]}" target="_blank" class="mt-8 block text-center border-2 border-white py-3 rounded-xl font-black hover:bg-white hover:text-black transition text-[10px] tracking-widest uppercase">Play</a>
-                            </div>
-                        </div>`;
-                });
-
-                document.getElementById('games-container').innerHTML = cardsHtml;
-                document.getElementById('total-playing').innerText = smartFormat(totalP);
-                document.getElementById('total-visits').innerText = smartFormat(totalV);
-                document.getElementById('platform-ccu').innerText = (totalP / 12000000 * 100).toFixed(4) + "%";
-                document.getElementById('platform-dau').innerText = (totalP * 1.5 / 150000000 * 100).toFixed(4) + "%";
-
-            } catch (err) {
-                console.error("403 Mitigation Active: Proxy is cooling down.");
+                return {
+                    name: g.name,
+                    playing: g.playing,
+                    visits: g.visits,
+                    thumb: tData.data[0].thumbnails[0].imageUrl,
+                    ratio: ratio,
+                    pId: game.pId
+                };
+            } catch (e) {
+                console.error("Game Load Failed", e);
+                return null;
             }
         }
 
-        loadNimbusData();
-        setInterval(loadNimbusData, 60000);
+        async function init() {
+            const container = document.getElementById('games-container');
+            container.innerHTML = "";
+            let totalP = 0;
+            let totalV = 0;
+
+            // Load games sequentially to stay under proxy rate limits
+            for (const config of GAMES_CONFIG) {
+                const data = await fetchGameData(config);
+                if (data) {
+                    totalP += data.playing;
+                    totalV += data.visits;
+
+                    const card = document.createElement('div');
+                    card.className = "game-card loaded flex flex-col md:flex-row";
+                    card.innerHTML = `
+                        <div class="md:w-1/2 h-64 bg-zinc-900">
+                            <img src="${data.thumb}" class="w-full h-full object-cover">
+                        </div>
+                        <div class="p-10 md:w-1/2 flex flex-col justify-center">
+                            <h4 class="text-3xl font-black uppercase tracking-tighter">${data.name}</h4>
+                            <div class="grid grid-cols-2 gap-4 mt-6">
+                                <div>
+                                    <p class="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">Active</p>
+                                    <p class="text-xl font-bold">${smartFormat(data.playing)}</p>
+                                </div>
+                                <div>
+                                    <p class="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">Rating</p>
+                                    <p class="text-xl font-bold text-green-500">${data.ratio}%</p>
+                                </div>
+                            </div>
+                            <a href="https://www.roblox.com/games/${data.pId}" target="_blank" class="mt-8 block text-center border-2 border-white py-3 rounded-xl font-black hover:bg-white hover:text-black transition text-[10px] tracking-widest uppercase">Play</a>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                }
+            }
+
+            // Update Top Bar
+            document.getElementById('total-playing').innerText = smartFormat(totalP);
+            document.getElementById('total-visits').innerText = smartFormat(totalV);
+            document.getElementById('platform-ccu').innerText = (totalP / 12500000 * 100).toFixed(5) + "%";
+            document.getElementById('platform-dau').innerText = (totalP * 1.6 / 155000000 * 100).toFixed(4) + "%";
+        }
+
+        init();
+        setInterval(init, 180000); // 3-minute refresh to keep API happy
     </script>
 </body>
 </html>
