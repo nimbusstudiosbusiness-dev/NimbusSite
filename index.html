@@ -21,13 +21,13 @@
     <nav class="max-w-7xl mx-auto px-8 py-10 flex justify-between items-center">
         <img src="https://i.postimg.cc/VLmRXK43/Group-29.png" alt="Nimbus Logo" class="h-10">
         <div class="flex items-center gap-10">
-            <a href="#games" class="nav-link">Games</a>
-            <a href="#about" class="nav-link">About Us</a>
+            <a href="#games" class="nav-link text-zinc-400">Games</a>
+            <a href="#about" class="nav-link text-zinc-400">About Us</a>
             <a href="https://www.roblox.com/groups/9826231921" target="_blank" class="bg-blue-600 px-6 py-2 rounded-full font-bold uppercase text-[0.7rem] hover:bg-blue-700 transition">Group Page</a>
         </div>
     </nav>
 
-    <header class="text-center py-20 px-4">
+    <header class="text-center py-20">
         <h1 class="text-7xl md:text-9xl font-black tracking-tighter mb-4 uppercase">Nimbus <span class="nbs-blue">Studios</span></h1>
         <p class="text-zinc-500 text-xl font-medium italic tracking-widest uppercase">We make better games.</p>
     </header>
@@ -42,11 +42,11 @@
             <h2 id="total-visits" class="text-5xl font-black mt-2">--</h2>
         </div>
         <div class="stat-card">
-            <p class="text-zinc-500 text-[10px] uppercase font-bold tracking-widest">% of Platform CCU</p>
+            <p class="text-zinc-500 text-[10px] uppercase font-bold tracking-widest">Platform Share</p>
             <h2 id="platform-ccu" class="text-4xl font-black nbs-blue mt-2">--</h2>
         </div>
         <div class="stat-card">
-            <p class="text-zinc-500 text-[10px] uppercase font-bold tracking-widest">% of Platform DAU</p>
+            <p class="text-zinc-500 text-[10px] uppercase font-bold tracking-widest">Network Reach</p>
             <h2 id="platform-dau" class="text-4xl font-black nbs-blue mt-2">--</h2>
         </div>
     </section>
@@ -61,22 +61,26 @@
     <section id="games" class="max-w-7xl mx-auto px-8 py-24">
         <h3 class="text-zinc-700 font-black text-xs uppercase tracking-[0.3em] mb-12 italic">Portfolio</h3>
         <div id="games-container" class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            </div>
+            <p class="text-zinc-800 font-bold uppercase tracking-widest">Initialising Cloud Handshake...</p>
+        </div>
     </section>
 
     <footer class="p-20 text-center border-t border-zinc-950 bg-black">
+        <img src="https://i.postimg.cc/rwpNPzBj/Frame-18.png" alt="Nimbus Icon" class="h-8 mx-auto mb-6 opacity-30">
         <p class="text-zinc-800 text-[10px] font-bold tracking-[0.5em] uppercase">&copy; 2026 Nimbus Studios</p>
     </footer>
 
     <script>
-        // Mapping Universe ID to Place ID
         const GAME_MAP = {
             "9248621375": "111865350831047",
             "9597132710": "129661264144098",
             "9464648181": "132769566461685",
             "9691359376": "97697276454887"
         };
-        const IDS = Object.keys(GAME_MAP).join(',');
+        const UNIVERSE_IDS = Object.keys(GAME_MAP).join(',');
+
+        // Resilient Batch Proxy
+        const PROXY = "https://corsproxy.io/?";
 
         function smartFormat(num) {
             if (!num || isNaN(num)) return "0";
@@ -85,32 +89,30 @@
             return num.toLocaleString();
         }
 
-        async function fetchRobloxData() {
+        async function fetchBatchData() {
             try {
-                // We use a CORS-anywhere gateway to access Roblox's official API
-                const gateway = "https://corsproxy.io/?";
-                const apiBase = encodeURIComponent("https://games.roblox.com/v1/games?universeIds=");
-                const thumbBase = encodeURIComponent("https://thumbnails.roblox.com/v1/games/multiget/thumbnails?universeIds=");
+                const infoUrl = `https://games.roblox.com/v1/games?universeIds=${UNIVERSE_IDS}`;
+                const thumbUrl = `https://thumbnails.roblox.com/v1/games/multiget/thumbnails?universeIds=${UNIVERSE_IDS}&size=768x432&format=Png`;
 
-                const [res, tRes] = await Promise.all([
-                    fetch(`${gateway}${apiBase}${IDS}`),
-                    fetch(`${gateway}${thumbBase}${IDS}&size=768x432&format=Png`)
+                const [infoRes, thumbRes] = await Promise.all([
+                    fetch(PROXY + encodeURIComponent(infoUrl)),
+                    fetch(PROXY + encodeURIComponent(thumbUrl))
                 ]);
 
-                const data = await res.json();
-                const tData = await tRes.json();
+                const infoData = await infoRes.json();
+                const thumbData = await thumbRes.json();
 
                 let totalP = 0;
                 let totalV = 0;
-                let html = "";
+                let htmlBuffer = "";
 
-                data.data.forEach((game, i) => {
+                infoData.data.forEach((game, i) => {
+                    const thumb = thumbData.data[i].thumbnails[0].imageUrl;
                     totalP += game.playing;
                     totalV += game.visits;
-                    const thumb = tData.data[i].thumbnails[0].imageUrl;
 
-                    html += `
-                        <div class="game-card flex flex-col md:flex-row">
+                    htmlBuffer += `
+                        <div class="game-card flex flex-col md:flex-row opacity-100 transition-opacity">
                             <div class="md:w-1/2 h-64 bg-zinc-900">
                                 <img src="${thumb}" class="w-full h-full object-cover">
                             </div>
@@ -118,26 +120,27 @@
                                 <h4 class="text-3xl font-black uppercase tracking-tighter">${game.name}</h4>
                                 <div class="grid grid-cols-2 gap-4 mt-6">
                                     <div><p class="text-zinc-500 text-[10px] font-bold">ACTIVE</p><p class="text-xl font-bold">${smartFormat(game.playing)}</p></div>
-                                    <div><p class="text-zinc-500 text-[10px] font-bold">VISITS</p><p class="text-xl font-bold">${smartFormat(game.visits)}</p></div>
+                                    <div><p class="text-zinc-500 text-[10px] font-bold">VISITS</p><p class="text-xl font-bold text-blue-500">${smartFormat(game.visits)}</p></div>
                                 </div>
                                 <a href="https://www.roblox.com/games/${GAME_MAP[game.id]}" target="_blank" class="mt-8 block text-center border-2 border-white py-3 rounded-xl font-black hover:bg-white hover:text-black transition text-[10px] tracking-widest uppercase">Play</a>
                             </div>
                         </div>`;
                 });
 
-                document.getElementById('games-container').innerHTML = html;
+                document.getElementById('games-container').innerHTML = htmlBuffer;
                 document.getElementById('total-playing').innerText = smartFormat(totalP);
                 document.getElementById('total-visits').innerText = smartFormat(totalV);
                 document.getElementById('platform-ccu').innerText = (totalP / 12500000 * 100).toFixed(5) + "%";
                 document.getElementById('platform-dau').innerText = (totalP * 1.6 / 155000000 * 100).toFixed(4) + "%";
 
             } catch (err) {
-                console.error("Connection lost to Roblox APIs.");
+                console.error("Connection Interrupted. Retrying...");
+                document.getElementById('games-container').innerHTML = `<p class="text-red-500 font-bold">PROXY TIMEOUT. REFRESHING...</p>`;
             }
         }
 
-        fetchRobloxData();
-        setInterval(fetchRobloxData, 60000);
+        fetchBatchData();
+        setInterval(fetchBatchData, 90000);
     </script>
 </body>
 </html>
