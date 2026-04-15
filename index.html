@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nimbus Studios</title>
+    <title>Nimbus Studios | Live</title>
     <link rel="icon" type="image/png" href="https://i.postimg.cc/rwpNPzBj/Frame-18.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { background-color: #000; color: white; font-family: 'Inter', sans-serif; scroll-behavior: smooth; }
         .nbs-blue { color: #3b82f6; }
         .stat-card { border-left: 1px solid #1a1a1a; padding-left: 2rem; }
-        .game-card { background: #0a0a0a; border: 1px solid #1a1a1a; border-radius: 24px; overflow: hidden; transition: 0.4s; height: 100%; }
+        .game-card { background: #0a0a0a; border: 1px solid #1a1a1a; border-radius: 24px; overflow: hidden; transition: 0.4s; height: 100%; min-height: 250px; }
         .game-card:hover { border-color: #3b82f6; transform: translateY(-5px); }
         .nav-link { font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; transition: 0.3s; cursor: pointer; }
         .nav-link:hover { color: #3b82f6; }
@@ -19,9 +19,7 @@
 <body>
 
     <nav class="max-w-7xl mx-auto px-8 py-10 flex justify-between items-center">
-        <div class="flex items-center gap-3">
-            <img src="https://i.postimg.cc/VLmRXK43/Group-29.png" alt="Nimbus Logo" class="h-10">
-        </div>
+        <img src="https://i.postimg.cc/VLmRXK43/Group-29.png" alt="Nimbus Logo" class="h-10">
         <div class="flex items-center gap-10">
             <a href="#games" class="nav-link">Games</a>
             <a href="#about" class="nav-link">About Us</a>
@@ -29,9 +27,9 @@
         </div>
     </nav>
 
-    <header class="text-center py-20">
+    <header class="text-center py-20 px-4">
         <h1 class="text-7xl md:text-9xl font-black tracking-tighter mb-4 uppercase">Nimbus <span class="nbs-blue">Studios</span></h1>
-        <p class="text-zinc-500 text-xl font-medium italic tracking-widest">We make better games.</p>
+        <p class="text-zinc-500 text-xl font-medium italic tracking-widest">WE MAKE BETTER GAMES.</p>
     </header>
 
     <section class="max-w-7xl mx-auto px-8 py-16 grid grid-cols-1 md:grid-cols-4 gap-10 border-y border-zinc-900">
@@ -72,95 +70,91 @@
     </footer>
 
     <script>
-        // Array of [UniverseID, PlaceID]
-        const GAME_LIST = [
-            ["9248621375", "111865350831047"],
-            ["9597132710", "129661264144098"],
-            ["9464648181", "132769566461685"],
-            ["9691359376", "97697276454887"]
+        const GAMES = [
+            { uId: "9248621375", pId: "111865350831047" },
+            { uId: "9597132710", pId: "129661264144098" },
+            { uId: "9464648181", pId: "132769566461685" },
+            { uId: "9691359376", pId: "97697276454887" }
         ];
 
-        const PROXY = "https://apis.roproxy.com/";
-        const EST_CCU = 12500000; 
-        const EST_DAU = 150000000;
+        const ROBLOX_CCU = 12500000;
+        const ROBLOX_DAU = 150000000;
 
         function smartFormat(num) {
-            if (!num) return "0";
+            if (!num || isNaN(num)) return "0";
             if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
             if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
             return num.toLocaleString();
         }
 
-        async function fetchAllStats() {
-            const universeIds = GAME_LIST.map(g => g[0]).join(',');
+        async function updateDashboard() {
             const container = document.getElementById('games-container');
-            
-            try {
-                // Fetch Game Data and Votes for all games
-                const [sRes, vRes, tRes] = await Promise.all([
-                    fetch(`https://games.roproxy.com/v1/games?universeIds=${universeIds}`),
-                    fetch(`https://games.roproxy.com/v1/games/votes?universeIds=${universeIds}`),
-                    fetch(`https://thumbnails.roproxy.com/v1/games/multiget/thumbnails?universeIds=${universeIds}&size=768x432&format=Png`)
-                ]);
+            let totalP = 0;
+            let totalV = 0;
+            let htmlBuffer = "";
 
-                const sData = await sRes.json();
-                const vData = await vRes.json();
-                const tData = await tRes.json();
+            // Fetch each game to prevent one error from breaking the whole list
+            for (const gameInfo of GAMES) {
+                try {
+                    const proxyUrl = `https://games.roproxy.com/v1/games?universeIds=${gameInfo.uId}`;
+                    const res = await fetch(proxyUrl);
+                    const data = await res.json();
+                    const g = data.data[0];
 
-                let totalPlaying = 0;
-                let totalVisits = 0;
-                container.innerHTML = ''; // Clear existing
+                    // Fetch individual ratings
+                    const vRes = await fetch(`https://games.roproxy.com/v1/games/votes?universeIds=${gameInfo.uId}`);
+                    const vData = await vRes.json();
+                    const v = vData.data[0];
+                    const ratio = (v.upVotes + v.downVotes) > 0 ? Math.round((v.upVotes / (v.upVotes + v.downVotes)) * 100) : 0;
 
-                sData.data.forEach((game, index) => {
-                    totalPlaying += game.playing;
-                    totalVisits += game.visits;
+                    // Fetch Individual Thumb
+                    const tUrl = `https://thumbnails.roproxy.com/v1/games/multiget/thumbnails?universeIds=${gameInfo.uId}&size=768x432&format=Png`;
+                    const tRes = await fetch(tUrl);
+                    const tData = await tRes.json();
+                    const thumb = tData.data[0].thumbnails[0].imageUrl;
 
-                    const votes = vData.data[index];
-                    const thumb = tData.data[index].thumbnails[0].imageUrl;
-                    const totalVotes = votes.upVotes + votes.downVotes;
-                    const ratio = totalVotes > 0 ? Math.round((votes.upVotes / totalVotes) * 100) : 0;
-                    const placeId = GAME_LIST.find(g => g[0] == game.id)[1];
+                    totalP += g.playing;
+                    totalV += g.visits;
 
-                    // Create Game Card
-                    container.innerHTML += `
+                    htmlBuffer += `
                         <div class="game-card flex flex-col md:flex-row">
                             <div class="md:w-1/2 h-64 bg-zinc-900">
                                 <img src="${thumb}" class="w-full h-full object-cover">
                             </div>
                             <div class="p-10 md:w-1/2 flex flex-col justify-center">
-                                <h4 class="text-3xl font-black uppercase tracking-tighter">${game.name}</h4>
+                                <h4 class="text-3xl font-black uppercase tracking-tighter">${g.name}</h4>
                                 <div class="grid grid-cols-2 gap-4 mt-6">
                                     <div>
                                         <p class="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">Active</p>
-                                        <p class="text-xl font-bold">${smartFormat(game.playing)}</p>
+                                        <p class="text-xl font-bold">${smartFormat(g.playing)}</p>
                                     </div>
                                     <div>
                                         <p class="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">Rating</p>
                                         <p class="text-xl font-bold text-green-500">${ratio}%</p>
                                     </div>
                                 </div>
-                                <a href="https://www.roblox.com/games/${placeId}" target="_blank" class="mt-8 block text-center border-2 border-white py-3 rounded-xl font-black hover:bg-white hover:text-black transition text-xs tracking-widest uppercase">Play</a>
+                                <a href="https://www.roblox.com/games/${gameInfo.pId}" target="_blank" class="mt-8 block text-center border-2 border-white py-3 rounded-xl font-black hover:bg-white hover:text-black transition text-[10px] tracking-[0.2em] uppercase">Play</a>
                             </div>
                         </div>
                     `;
-                });
-
-                // Update Hero Stats
-                document.getElementById('total-playing').innerText = smartFormat(totalPlaying);
-                document.getElementById('total-visits').innerText = smartFormat(totalVisits);
-                
-                const ccuShare = (totalPlaying / EST_CCU) * 100;
-                const dauShare = (totalPlaying * 1.6 / EST_DAU) * 100;
-                document.getElementById('platform-ccu').innerText = ccuShare.toFixed(5) + "%";
-                document.getElementById('platform-dau').innerText = dauShare.toFixed(4) + "%";
-
-            } catch (err) {
-                console.error("Fetch failed:", err);
+                } catch (e) {
+                    console.warn(`Failed to load game ${gameInfo.uId}`);
+                }
             }
+
+            // Push to UI
+            container.innerHTML = htmlBuffer;
+            document.getElementById('total-playing').innerText = smartFormat(totalP);
+            document.getElementById('total-visits').innerText = smartFormat(totalV);
+            
+            const cShare = (totalP / ROBLOX_CCU) * 100;
+            const dShare = (totalP * 1.8 / ROBLOX_DAU) * 100;
+            document.getElementById('platform-ccu').innerText = cShare.toFixed(5) + "%";
+            document.getElementById('platform-dau').innerText = dShare.toFixed(4) + "%";
         }
 
-        fetchAllStats();
-        setInterval(fetchAllStats, 60000);
+        updateDashboard();
+        setInterval(updateDashboard, 60000);
     </script>
 </body>
 </html>
