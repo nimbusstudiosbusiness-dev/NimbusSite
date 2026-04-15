@@ -9,9 +9,9 @@
     <style>
         body { background-color: #000; color: white; font-family: 'Inter', sans-serif; scroll-behavior: smooth; }
         .nbs-blue { color: #3b82f6; }
-        .stat-card { border-left: 1px solid #1a1a1a; padding-left: 2rem; min-height: 100px; }
-        .game-card { background: #0a0a0a; border: 1px solid #1a1a1a; border-radius: 24px; overflow: hidden; transition: 0.4s; opacity: 0; transform: translateY(10px); }
-        .game-card.loaded { opacity: 1; transform: translateY(0); }
+        .stat-card { border-left: 1px solid #1a1a1a; padding-left: 2rem; }
+        .game-card { background: #0a0a0a; border: 1px solid #1a1a1a; border-radius: 24px; overflow: hidden; transition: 0.4s; opacity: 0; }
+        .game-card.visible { opacity: 1; }
         .game-card:hover { border-color: #3b82f6; transform: translateY(-5px); }
         .nav-link { font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; transition: 0.3s; cursor: pointer; }
         .nav-link:hover { color: #3b82f6; }
@@ -20,7 +20,7 @@
 <body>
 
     <nav class="max-w-7xl mx-auto px-8 py-10 flex justify-between items-center">
-        <div class="flex items-center gap-3">
+        <div class="flex items-center">
             <img src="https://i.postimg.cc/VLmRXK43/Group-29.png" alt="Nimbus Logo" class="h-10">
         </div>
         <div class="flex items-center gap-10">
@@ -64,7 +64,8 @@
     <section id="games" class="max-w-7xl mx-auto px-8 py-24">
         <h3 class="text-zinc-700 font-black text-xs uppercase tracking-[0.3em] mb-12 italic">Portfolio</h3>
         <div id="games-container" class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            </div>
+            <p id="loading-msg" class="text-zinc-800 font-bold uppercase tracking-widest animate-pulse">Establishing Connection...</p>
+        </div>
     </section>
 
     <footer class="p-20 text-center border-t border-zinc-950 bg-black">
@@ -73,14 +74,16 @@
     </footer>
 
     <script>
-        const GAMES_CONFIG = [
+        const GAME_LIST = [
             { uId: "9248621375", pId: "111865350831047" },
             { uId: "9597132710", pId: "129661264144098" },
             { uId: "9464648181", pId: "132769566461685" },
             { uId: "9691359376", pId: "97697276454887" }
         ];
 
-        const PROXY_BASE = "https://api.allorigins.win/raw?url=";
+        const PROXY = "https://games.roproxy.com/v1/games?universeIds=";
+        const THUMB_PROXY = "https://thumbnails.roproxy.com/v1/games/multiget/thumbnails?universeIds=";
+        const VOTE_PROXY = "https://games.roproxy.com/v1/games/votes?universeIds=";
 
         function smartFormat(num) {
             if (!num || isNaN(num)) return "0";
@@ -89,88 +92,72 @@
             return num.toLocaleString();
         }
 
-        async function fetchGameData(game) {
-            try {
-                // Fetch basic info and thumbnail
-                const infoUrl = encodeURIComponent(`https://games.roblox.com/v1/games?universeIds=${game.uId}`);
-                const thumbUrl = encodeURIComponent(`https://thumbnails.roblox.com/v1/games/multiget/thumbnails?universeIds=${game.uId}&size=768x432&format=Png`);
-                const voteUrl = encodeURIComponent(`https://games.roblox.com/v1/games/votes?universeIds=${game.uId}`);
+        // Delay helper to prevent 403 rate limits
+        const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-                const [iRes, tRes, vRes] = await Promise.all([
-                    fetch(PROXY_BASE + infoUrl),
-                    fetch(PROXY_BASE + thumbUrl),
-                    fetch(PROXY_BASE + voteUrl)
-                ]);
-
-                const iData = await iRes.json();
-                const tData = await tRes.json();
-                const vData = await vRes.json();
-
-                const g = iData.data[0];
-                const v = vData.data[0];
-                const ratio = (v.upVotes + v.downVotes) > 0 ? Math.round((v.upVotes / (v.upVotes + v.downVotes)) * 100) : 0;
-
-                return {
-                    name: g.name,
-                    playing: g.playing,
-                    visits: g.visits,
-                    thumb: tData.data[0].thumbnails[0].imageUrl,
-                    ratio: ratio,
-                    pId: game.pId
-                };
-            } catch (e) {
-                console.error("Game Load Failed", e);
-                return null;
-            }
-        }
-
-        async function init() {
+        async function initDashboard() {
             const container = document.getElementById('games-container');
-            container.innerHTML = "";
-            let totalP = 0;
-            let totalV = 0;
+            let totalPlaying = 0;
+            let totalVisits = 0;
+            let htmlBuffer = "";
 
-            // Load games sequentially to stay under proxy rate limits
-            for (const config of GAMES_CONFIG) {
-                const data = await fetchGameData(config);
-                if (data) {
-                    totalP += data.playing;
-                    totalV += data.visits;
+            for (const game of GAME_LIST) {
+                try {
+                    const [sRes, vRes, tRes] = await Promise.all([
+                        fetch(`${PROXY}${game.uId}`),
+                        fetch(`${VOTE_PROXY}${game.uId}`),
+                        fetch(`${THUMB_PROXY}${game.uId}&size=768x432&format=Png`)
+                    ]);
 
-                    const card = document.createElement('div');
-                    card.className = "game-card loaded flex flex-col md:flex-row";
-                    card.innerHTML = `
-                        <div class="md:w-1/2 h-64 bg-zinc-900">
-                            <img src="${data.thumb}" class="w-full h-full object-cover">
-                        </div>
-                        <div class="p-10 md:w-1/2 flex flex-col justify-center">
-                            <h4 class="text-3xl font-black uppercase tracking-tighter">${data.name}</h4>
-                            <div class="grid grid-cols-2 gap-4 mt-6">
-                                <div>
-                                    <p class="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">Active</p>
-                                    <p class="text-xl font-bold">${smartFormat(data.playing)}</p>
-                                </div>
-                                <div>
-                                    <p class="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">Rating</p>
-                                    <p class="text-xl font-bold text-green-500">${data.ratio}%</p>
-                                </div>
+                    const sData = await sRes.json();
+                    const vData = await vRes.json();
+                    const tData = await tRes.json();
+
+                    const g = sData.data[0];
+                    const v = vData.data[0];
+                    const thumb = tData.data[0].thumbnails[0].imageUrl;
+                    const ratio = (v.upVotes + v.downVotes) > 0 ? Math.round((v.upVotes / (v.upVotes + v.downVotes)) * 100) : 0;
+
+                    totalPlaying += g.playing;
+                    totalVisits += g.visits;
+
+                    htmlBuffer += `
+                        <div class="game-card visible flex flex-col md:flex-row">
+                            <div class="md:w-1/2 h-64 bg-zinc-900">
+                                <img src="${thumb}" class="w-full h-full object-cover">
                             </div>
-                            <a href="https://www.roblox.com/games/${data.pId}" target="_blank" class="mt-8 block text-center border-2 border-white py-3 rounded-xl font-black hover:bg-white hover:text-black transition text-[10px] tracking-widest uppercase">Play</a>
+                            <div class="p-10 md:w-1/2 flex flex-col justify-center">
+                                <h4 class="text-3xl font-black uppercase tracking-tighter">${g.name}</h4>
+                                <div class="grid grid-cols-2 gap-4 mt-6">
+                                    <div>
+                                        <p class="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">Active</p>
+                                        <p class="text-xl font-bold">${smartFormat(g.playing)}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">Rating</p>
+                                        <p class="text-xl font-bold text-green-500">${ratio}%</p>
+                                    </div>
+                                </div>
+                                <a href="https://www.roblox.com/games/${game.pId}" target="_blank" class="mt-8 block text-center border-2 border-white py-3 rounded-xl font-black hover:bg-white hover:text-black transition text-[10px] tracking-widest uppercase">Play</a>
+                            </div>
                         </div>
                     `;
-                    container.appendChild(card);
+                    // Wait 200ms between games to be kind to the proxy
+                    await sleep(200); 
+                } catch (e) {
+                    console.warn("Retrying game load...");
                 }
             }
 
-            // Update Top Bar
-            document.getElementById('total-playing').innerText = smartFormat(totalP);
-            document.getElementById('total-visits').innerText = smartFormat(totalV);
-            document.getElementById('platform-ccu').innerText = (totalP / 12500000 * 100).toFixed(5) + "%";
-            document.getElementById('platform-dau').innerText = (totalP * 1.6 / 155000000 * 100).toFixed(4) + "%";
+            container.innerHTML = htmlBuffer;
+            document.getElementById('total-playing').innerText = smartFormat(totalPlaying);
+            document.getElementById('total-visits').innerText = smartFormat(totalVisits);
+            document.getElementById('platform-ccu').innerText = (totalPlaying / 12500000 * 100).toFixed(5) + "%";
+            document.getElementById('platform-dau').innerText = (totalPlaying * 1.6 / 155000000 * 100).toFixed(4) + "%";
         }
 
-        init();
-        setInterval(init, 30); // 3-minute refresh to keep API happy
+        initDashboard();
+        setInterval(initDashboard, 60000);
     </script>
 </body>
 </html>
