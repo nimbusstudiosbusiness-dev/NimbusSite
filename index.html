@@ -10,7 +10,7 @@
         body { background-color: #000; color: white; font-family: 'Inter', sans-serif; scroll-behavior: smooth; }
         .nbs-blue { color: #3b82f6; }
         .stat-card { border-left: 1px solid #1a1a1a; padding-left: 2rem; }
-        .game-card { background: #0a0a0a; border: 1px solid #1a1a1a; border-radius: 24px; overflow: hidden; transition: 0.4s; }
+        .game-card { background: #0a0a0a; border: 1px solid #1a1a1a; border-radius: 24px; overflow: hidden; transition: 0.4s; height: 100%; }
         .game-card:hover { border-color: #3b82f6; transform: translateY(-5px); }
         .nav-link { font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; transition: 0.3s; cursor: pointer; }
         .nav-link:hover { color: #3b82f6; }
@@ -62,30 +62,8 @@
 
     <section id="games" class="max-w-7xl mx-auto px-8 py-24">
         <h3 class="text-zinc-700 font-black text-xs uppercase tracking-[0.3em] mb-12 italic">Portfolio</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div class="game-card flex flex-col md:flex-row">
-                <div class="md:w-1/2 h-64 bg-zinc-900">
-                    <img id="game-thumb" src="" class="w-full h-full object-cover opacity-0 transition-opacity duration-1000">
-                </div>
-                <div class="p-10 md:w-1/2 flex flex-col justify-center">
-                    <h4 id="game-name" class="text-4xl font-black uppercase tracking-tighter">Connecting...</h4>
-                    <div class="grid grid-cols-2 gap-4 mt-6">
-                        <div>
-                            <p class="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">Active</p>
-                            <p id="game-players" class="text-xl font-bold">--</p>
-                        </div>
-                        <div>
-                            <p class="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">Like Ratio</p>
-                            <p id="game-likes" class="text-xl font-bold text-green-500">--</p>
-                        </div>
-                    </div>
-                    <a id="game-link" href="#" target="_blank" class="mt-8 block text-center border-2 border-white py-3 rounded-xl font-black hover:bg-white hover:text-black transition text-xs tracking-widest uppercase">Play</a>
-                </div>
+        <div id="games-container" class="grid grid-cols-1 md:grid-cols-2 gap-8">
             </div>
-            <div class="game-card border-dashed border-zinc-800 bg-transparent flex items-center justify-center p-20">
-                <p class="text-zinc-800 font-black text-xl italic uppercase">Upcoming Project</p>
-            </div>
-        </div>
     </section>
 
     <footer class="p-20 text-center border-t border-zinc-950 bg-black">
@@ -94,9 +72,16 @@
     </footer>
 
     <script>
-        const PLACE_ID = "119317534126469";
+        // Array of [UniverseID, PlaceID]
+        const GAME_LIST = [
+            ["9248621375", "111865350831047"],
+            ["9597132710", "129661264144098"],
+            ["9464648181", "132769566461685"],
+            ["9691359376", "97697276454887"]
+        ];
+
         const PROXY = "https://apis.roproxy.com/";
-        const EST_CCU = 12500000; // 2026 Peak
+        const EST_CCU = 12500000; 
         const EST_DAU = 150000000;
 
         function smartFormat(num) {
@@ -106,66 +91,76 @@
             return num.toLocaleString();
         }
 
-        async function initDashboard() {
+        async function fetchAllStats() {
+            const universeIds = GAME_LIST.map(g => g[0]).join(',');
+            const container = document.getElementById('games-container');
+            
             try {
-                // Step 1: Get Universe ID (Critical to run first)
-                const uRes = await fetch(`${PROXY}universes/v1/places/${PLACE_ID}/universe`);
-                const uData = await uRes.json();
-                const universeId = uData.universeId;
-
-                if (universeId) {
-                    await fetchStats(universeId);
-                }
-            } catch (err) {
-                console.error("Connection error. Retrying...");
-            }
-        }
-
-        async function fetchStats(uId) {
-            try {
-                // Fetch All Data simultaneously for speed
-                const [sRes, tRes, vRes] = await Promise.all([
-                    fetch(`https://games.roproxy.com/v1/games?universeIds=${uId}`),
-                    fetch(`https://thumbnails.roproxy.com/v1/games/multiget/thumbnails?universeIds=${uId}&size=768x432&format=Png`),
-                    fetch(`https://games.roproxy.com/v1/games/votes?universeIds=${uId}`)
+                // Fetch Game Data and Votes for all games
+                const [sRes, vRes, tRes] = await Promise.all([
+                    fetch(`https://games.roproxy.com/v1/games?universeIds=${universeIds}`),
+                    fetch(`https://games.roproxy.com/v1/games/votes?universeIds=${universeIds}`),
+                    fetch(`https://thumbnails.roproxy.com/v1/games/multiget/thumbnails?universeIds=${universeIds}&size=768x432&format=Png`)
                 ]);
 
                 const sData = await sRes.json();
-                const game = sData.data[0];
+                const vData = await vRes.json();
+                const tData = await tRes.json();
 
-                // Update UI
-                document.getElementById('total-playing').innerText = smartFormat(game.playing);
-                document.getElementById('game-players').innerText = smartFormat(game.playing);
-                document.getElementById('total-visits').innerText = smartFormat(game.visits);
-                document.getElementById('game-name').innerText = game.name;
-                document.getElementById('game-link').href = `https://www.roblox.com/games/${PLACE_ID}`;
+                let totalPlaying = 0;
+                let totalVisits = 0;
+                container.innerHTML = ''; // Clear existing
 
-                // Market Share calculation
-                const ccuShare = (game.playing / EST_CCU) * 100;
-                const dauShare = (game.playing * 1.6 / EST_DAU) * 100;
+                sData.data.forEach((game, index) => {
+                    totalPlaying += game.playing;
+                    totalVisits += game.visits;
+
+                    const votes = vData.data[index];
+                    const thumb = tData.data[index].thumbnails[0].imageUrl;
+                    const totalVotes = votes.upVotes + votes.downVotes;
+                    const ratio = totalVotes > 0 ? Math.round((votes.upVotes / totalVotes) * 100) : 0;
+                    const placeId = GAME_LIST.find(g => g[0] == game.id)[1];
+
+                    // Create Game Card
+                    container.innerHTML += `
+                        <div class="game-card flex flex-col md:flex-row">
+                            <div class="md:w-1/2 h-64 bg-zinc-900">
+                                <img src="${thumb}" class="w-full h-full object-cover">
+                            </div>
+                            <div class="p-10 md:w-1/2 flex flex-col justify-center">
+                                <h4 class="text-3xl font-black uppercase tracking-tighter">${game.name}</h4>
+                                <div class="grid grid-cols-2 gap-4 mt-6">
+                                    <div>
+                                        <p class="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">Active</p>
+                                        <p class="text-xl font-bold">${smartFormat(game.playing)}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">Rating</p>
+                                        <p class="text-xl font-bold text-green-500">${ratio}%</p>
+                                    </div>
+                                </div>
+                                <a href="https://www.roblox.com/games/${placeId}" target="_blank" class="mt-8 block text-center border-2 border-white py-3 rounded-xl font-black hover:bg-white hover:text-black transition text-xs tracking-widest uppercase">Play</a>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                // Update Hero Stats
+                document.getElementById('total-playing').innerText = smartFormat(totalPlaying);
+                document.getElementById('total-visits').innerText = smartFormat(totalVisits);
+                
+                const ccuShare = (totalPlaying / EST_CCU) * 100;
+                const dauShare = (totalPlaying * 1.6 / EST_DAU) * 100;
                 document.getElementById('platform-ccu').innerText = ccuShare.toFixed(5) + "%";
                 document.getElementById('platform-dau').innerText = dauShare.toFixed(4) + "%";
 
-                // Thumbnail Display
-                const tData = await tRes.json();
-                const thumb = document.getElementById('game-thumb');
-                thumb.src = tData.data[0].thumbnails[0].imageUrl;
-                thumb.style.opacity = "1";
-
-                // Fix for Vote Ratio
-                const vData = await vRes.json();
-                const v = vData.data[0];
-                const totalVotes = v.upVotes + v.downVotes;
-                const ratio = totalVotes > 0 ? Math.round((v.upVotes / totalVotes) * 100) : 0;
-                document.getElementById('game-likes').innerText = ratio + "%";
-
             } catch (err) {
-                console.warn("Retrying fetch sequence...");
+                console.error("Fetch failed:", err);
             }
         }
 
-        initDashboard();
-        setInterval(initDashboard, 45000); // Auto-update
+        fetchAllStats();
+        setInterval(fetchAllStats, 60000);
     </script>
 </body>
 </html>
