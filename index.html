@@ -105,7 +105,9 @@
     </footer>
 
     <script>
+        // FIXED: Using correct Universe ID configurations for the game endpoints to pull data
         const GAME_DATA = [
+            { uId: "120791444122709", pId: "119317534126469" }, // ReHaul
             { uId: "9248621375", pId: "111865350831047" },
             { uId: "9597132710", pId: "129661264144098" },
             { uId: "9464648181", pId: "132769566461685" },
@@ -124,7 +126,6 @@
             const universeIds = GAME_DATA.map(g => g.uId).join(',');
             
             try {
-                // FIXED: Swapped to RoProxy, the dedicated Roblox API proxy
                 const infoUrl = `https://games.roproxy.com/v1/games?universeIds=${universeIds}`;
                 const response = await fetch(infoUrl);
                 if (!response.ok) throw new Error("Games API request failed");
@@ -179,7 +180,7 @@
                 container.innerHTML = `
                     <div class="col-span-1 md:col-span-2 text-center py-12 border border-zinc-900 rounded-2xl bg-[#050505]">
                         <p class="text-red-500 font-bold uppercase tracking-widest text-xs mb-2">Data Handshake Interrupted</p>
-                        <p class="text-zinc-500 text-xs uppercase tracking-wider">Roblox API blocked the request. Retrying automatically...</p>
+                        <p class="text-zinc-500 text-xs uppercase tracking-wider">Roblox API connection issue. Retrying automatically...</p>
                     </div>`;
             }
         }
