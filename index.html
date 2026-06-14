@@ -113,7 +113,8 @@
             { uId: "9691359376", pId: "97697276454887" }
         ];
 
-        const PROXY = "https://api.codetabs.com/v1/proxy?quest=";
+        // FIXED: Swapped to a more stable CORS proxy service
+        const PROXY = "https://corsproxy.io/?";
 
         function smartFormat(num) {
             if (!num || isNaN(num)) return "0";
@@ -129,10 +130,12 @@
             try {
                 const infoUrl = `https://games.roblox.com/v1/games?universeIds=${universeIds}`;
                 const response = await fetch(PROXY + encodeURIComponent(infoUrl));
+                if (!response.ok) throw new Error("Games API request failed");
                 const data = await response.json();
 
                 const thumbUrl = `https://thumbnails.roblox.com/v1/games/multiget/thumbnails?universeIds=${universeIds}&size=768x432&format=Png`;
                 const thumbRes = await fetch(PROXY + encodeURIComponent(thumbUrl));
+                if (!thumbRes.ok) throw new Error("Thumbnails API request failed");
                 const thumbData = await thumbRes.json();
 
                 let totalP = 0;
@@ -175,7 +178,13 @@
                 document.getElementById('platform-dau').innerText = (totalP * 1.6 / 155000000 * 100).toFixed(4) + "%";
 
             } catch (err) {
-                console.error("Cloud Connection Lost. Retrying in 2m.");
+                console.error("Cloud Connection Lost. Retrying in 2m.", err);
+                // FIXED: Breaks the infinite loading screen if the public proxy drops out
+                container.innerHTML = `
+                    <div class="col-span-1 md:col-span-2 text-center py-12 border border-zinc-900 rounded-2xl bg-[#050505]">
+                        <p class="text-red-500 font-bold uppercase tracking-widest text-xs mb-2">Data Handshake Interrupted</p>
+                        <p class="text-zinc-500 text-xs uppercase tracking-wider">Roblox API proxy down or rate-limited. Retrying automatically...</p>
+                    </div>`;
             }
         }
 
